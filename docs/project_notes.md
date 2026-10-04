@@ -91,3 +91,8 @@ main.py  – entry point
 - [x] Connection test: src/test_db.py → OK
 - [x] Persistence test: table survived container removal
 - [x] Committed + pushed
+### Day 5 — 2026-10-04 ✅
+- [x] DB user changed: cam_registry_dev (was pipeline)
+- [x] sql/01_create_raw_schema.sql: schema raw + raw_business_registry
+- [x] Applied via: Get-Content file | docker exec -i ... psql
+- [x] Table confirmed: raw.raw_business_registry
