@@ -23,6 +23,27 @@ docs/    – notes and docs
 main.py  – entry point
 
 ## Progress Log
+## How to Resume (environment)
+
+1. Open terminal in C:\Projects\Cambodia_Business_Registry_Pipeline
+2. Activate venv: venv\Scripts\activate
+3. Start DB: docker compose up -d
+4. Confirm DB healthy: docker compose ps
+5. Confirm schema: docker exec -it cambodia_registry_pg psql -U cam_registry_dev -d cambodia_registry -c "\dt raw.*"
+
+## Current State (last updated: 2026-10-04, end of Day 5)
+- DB user: cam_registry_dev
+- DB: cambodia_registry
+- Host port: 5433
+- Tables: raw.raw_business_registry
+- Raw CSVs cached in data/raw/ (gitignored)
+- No data loaded into Postgres yet
+- Next: Day 6
+
+## Day 6 Candidates
+- sql/02_create_raw_credit.sql (credit table)
+- src/clean.py (cleaning layer: cast types, rename cols)
+- Load layer: push cleaned data into Postgres
 
 ### Day 1 — 2026-10-03 ✅
 - Created GitHub repo, cloned locally
