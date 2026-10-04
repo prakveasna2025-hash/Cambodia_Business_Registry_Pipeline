@@ -78,8 +78,9 @@ main.py  – entry point
 - [x] API fetcher written: src/fetch_api.py (paginated)
 - [x] Raw API output cached: data/raw/new_business_registrations_api.csv
 
-### Day 3 (planned)
-- Cleaning layer: cast year to int, number_of_registration to numeric
-- Handle Partnership nulls (keep as NaN, do not fill)
-- Rename columns: new_business_registration -> company_type, number_of_registration -> registration_count
-- Decide schema for SQL load
+### Day 3 — 2026-10-04 ✅
+- [x] Confirmed grain for both datasets
+- [x] Confirmed columns + primary keys
+- [x] Wrote docs/data_dictionary.md
+- [x] Committed + pushed
+
