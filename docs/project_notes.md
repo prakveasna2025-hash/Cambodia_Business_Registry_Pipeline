@@ -84,3 +84,10 @@ main.py  – entry point
 - [x] Wrote docs/data_dictionary.md
 - [x] Committed + pushed
 
+### Day 4 — 2026-10-04 ✅
+- [x] docker-compose.yml: postgres:16-alpine service
+- [x] Named volume: cambodia_business_registry_pipeline_pg_data
+- [x] Host port 5433 (5432 used by other project)
+- [x] Connection test: src/test_db.py → OK
+- [x] Persistence test: table survived container removal
+- [x] Committed + pushed
