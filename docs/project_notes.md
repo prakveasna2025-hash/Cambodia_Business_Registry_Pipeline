@@ -125,3 +125,10 @@ main.py  – entry point
 - [x] Recorded fetch metadata in data_dictionary.md
 - [x] Registrations: 1226 bytes response / 428 bytes CSV / 12 rows
 - [x] Credit CSV: 881 bytes / 25 rows
+### Day 7 — 2026-10-05 ✅
+- [x] Renamed src/fetch_api.py -> src/extract.py
+- [x] Removed src/test_api.py, src/test_db.py
+- [x] Filled src/transform.py: snake_case + semantic renames + province standardization
+- [x] Registrations: registration_count + year = Int64; 2 true nulls preserved
+- [x] Credit: 25 rows, no nulls, province names standardized
+- [x] Note: pandas 3.0 uses `str` dtype for text (replaces `object`)
