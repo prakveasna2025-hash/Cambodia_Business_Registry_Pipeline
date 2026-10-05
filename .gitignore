@@ -16,3 +16,4 @@ logs/
 
 data/rejected/*
 !data/rejected/.gitkeep
+scripts/
