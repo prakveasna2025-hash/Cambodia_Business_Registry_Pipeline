@@ -13,3 +13,6 @@ data/processed/*
 .env
 *.log
 logs/
+
+data/rejected/*
+!data/rejected/.gitkeep

@@ -132,3 +132,10 @@ main.py  – entry point
 - [x] Registrations: registration_count + year = Int64; 2 true nulls preserved
 - [x] Credit: 25 rows, no nulls, province names standardized
 - [x] Note: pandas 3.0 uses `str` dtype for text (replaces `object`)
+
+### Day 8 — 2026-10-05 ✅
+- [x] src/validate.py: check_required, check_non_negative, annotate_reasons, validate
+- [x] Rejects written to data/rejected/<name>_rejected.csv with reject_reason column
+- [x] Paths anchored to PROJECT_ROOT (Path(__file__).resolve().parents[1]) — runs from anywhere
+- [x] Test: injected 3 bad rows → 3 caught (1 null, 2 negative)
+- [x] Real data: 12 + 25 rows, 0 rejects (clean)
