@@ -2,8 +2,9 @@ from pathlib import Path
 import re
 import pandas as pd
 
-RAW_DIR = Path("data/raw")
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+RAW_DIR = PROJECT_ROOT / "data" / "raw"
 PROVINCE_MAP = {
     "Steung Traeng": "Stung Treng",
     "Sihanoukville": "Preah Sihanouk",

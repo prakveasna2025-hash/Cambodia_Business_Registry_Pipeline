@@ -4,9 +4,10 @@ import requests
 import pandas as pd
 
 BASE_URL = "https://data.mef.gov.kh/api/v1/public-datasets/pd_688aee7f79fe4d000707d9b0/json"
-RAW_DIR = Path("data/raw")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+RAW_DIR = PROJECT_ROOT / "data" / "raw"
+LOG_DIR = PROJECT_ROOT / "logs"
 OUT = RAW_DIR / "new_business_registrations_api.csv"
-LOG_DIR = Path("logs")
 LOG_FILE = LOG_DIR / "fetch.log"
 PAGE_SIZE = 100
 
