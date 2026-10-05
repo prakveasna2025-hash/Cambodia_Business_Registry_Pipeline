@@ -11,6 +11,13 @@ Last updated: 2026-10-04
 **Fetch script:** src/fetch_api.py
 **Local cache:** data/raw/new_business_registrations_api.csv (gitignored)
 
+### Fetch metadata
+- Last fetched: 2026-10-05
+- HTTP response size: 1226 bytes (1.20 KB)
+- CSV file size: 428 bytes
+- Rows: 12
+- Pages: 1 (page_size=100)
+
 ### Grain
 One row per company type per year.
 
@@ -38,6 +45,11 @@ Verified: 0 duplicate (company_type, year) pairs across 12 rows.
 
 **Source:** MEF Open Data Portal (manual download)
 **Local cache:** data/raw/credit_by_area_province_2024.csv (gitignored)
+
+### Fetch metadata
+- Source type: manual download
+- File size: 881 bytes
+- Rows: 25
 
 ### Grain
 One row per province, single reporting year 2024.

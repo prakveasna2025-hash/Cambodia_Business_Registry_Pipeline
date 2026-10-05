@@ -117,3 +117,11 @@ main.py  – entry point
 - [x] sql/01_create_raw_schema.sql: schema raw + raw_business_registry
 - [x] Applied via: Get-Content file | docker exec -i ... psql
 - [x] Table confirmed: raw.raw_business_registry
+
+### Day 6 — 2026-10-05 ✅
+- [x] Added logging to src/fetch_api.py (file + console)
+- [x] Logs: response bytes, Content-Length header, row count per page
+- [x] Log file: logs/fetch.log (gitignored)
+- [x] Recorded fetch metadata in data_dictionary.md
+- [x] Registrations: 1226 bytes response / 428 bytes CSV / 12 rows
+- [x] Credit CSV: 881 bytes / 25 rows

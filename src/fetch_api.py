@@ -1,15 +1,29 @@
 from pathlib import Path
+import logging
 import requests
 import pandas as pd
 
 BASE_URL = "https://data.mef.gov.kh/api/v1/public-datasets/pd_688aee7f79fe4d000707d9b0/json"
 RAW_DIR = Path("data/raw")
 OUT = RAW_DIR / "new_business_registrations_api.csv"
+LOG_DIR = Path("logs")
+LOG_FILE = LOG_DIR / "fetch.log"
 PAGE_SIZE = 100
 
 
+def setup_logging() -> None:
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s | %(levelname)-7s | %(message)s",
+        handlers=[
+            logging.FileHandler(LOG_FILE, encoding="utf-8"),
+            logging.StreamHandler(),
+        ],
+    )
+
+
 def fetch_all() -> list[dict]:
-    """Fetch every page from the MEF API and return all items."""
     all_items: list[dict] = []
     page = 1
 
@@ -20,14 +34,20 @@ def fetch_all() -> list[dict]:
             timeout=30,
         )
         resp.raise_for_status()
-        payload = resp.json()
 
+        size_bytes = len(resp.content)
+        size_kb = size_bytes / 1024
+        server_size = resp.headers.get("Content-Length", "n/a")
+
+        payload = resp.json()
         items = payload.get("items", [])
         total_pages = payload.get("total_pages", 1)
         total_items = payload.get("total_items", len(items))
 
-        print(f"page {page}/{total_pages}: +{len(items)} rows "
-              f"(running total {len(all_items) + len(items)}/{total_items})")
+        logging.info(
+            "page %d/%d | response: %d bytes (%.2f KB) | server Content-Length: %s | rows this page: %d",
+            page, total_pages, size_bytes, size_kb, server_size, len(items),
+        )
 
         all_items.extend(items)
 
@@ -35,6 +55,8 @@ def fetch_all() -> list[dict]:
             break
         page += 1
 
+    logging.info("Total rows fetched: %d (API reported total_items=%d)", len(
+        all_items), total_items)
     return all_items
 
 
@@ -42,10 +64,19 @@ def save(items: list[dict], out: Path) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     df = pd.DataFrame(items)
     df.to_csv(out, index=False, encoding="utf-8")
-    print(f"\nSaved {len(df)} rows -> {out}")
-    print(f"Columns: {list(df.columns)}")
+
+    file_bytes = out.stat().st_size
+    logging.info("Saved CSV: %s | %d rows | %d bytes (%.2f KB)",
+                 out, len(df), file_bytes, file_bytes / 1024)
+
+
+def main() -> None:
+    setup_logging()
+    logging.info("=== fetch_api run start ===")
+    items = fetch_all()
+    save(items, OUT)
+    logging.info("=== fetch_api run end ===")
 
 
 if __name__ == "__main__":
-    items = fetch_all()
-    save(items, OUT)
+    main()
