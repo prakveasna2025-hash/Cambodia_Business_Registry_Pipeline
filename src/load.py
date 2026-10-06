@@ -5,7 +5,7 @@ import sys
 import logging
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
-
+import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 REPORTING_YEAR = 2024
@@ -23,6 +23,37 @@ UPSERT_SQL = text("""
         credit_users_k = EXCLUDED.credit_users_k,
         loaded_at = NOW()
 """)
+
+UPSERT_REGISTRY_SQL = text("""
+    INSERT INTO raw.raw_business_registry
+        (company_type, registration_count, year)
+    VALUES
+        (:company_type, :registration_count, :year)
+    ON CONFLICT (company_type, year) DO UPDATE SET
+        registration_count = EXCLUDED.registration_count,
+        loaded_at = NOW()
+""")
+
+
+def to_registry_records(df) -> list[dict]:
+    records = []
+    for _, row in df.iterrows():
+        records.append({
+            "company_type": str(row["company_type"]),
+            "registration_count": (
+                int(row["registration_count"])
+                if pd.notna(row["registration_count"]) else None
+            ),
+            "year": str(int(row["year"])),
+        })
+    return records
+
+
+def upsert_registrations(engine, df) -> int:
+    records = to_registry_records(df)
+    with engine.begin() as conn:
+        conn.execute(UPSERT_REGISTRY_SQL, records)
+    return len(records)
 
 
 def setup_logging() -> None:

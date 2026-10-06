@@ -148,3 +148,10 @@ main.py  – entry point
   - Transaction via engine.begin() — all-or-nothing
 - [x] Proven idempotent: ran twice → still 25 rows
 - [x] Proven overwrite: tampered Kandal → upsert reverted it
+### Day 10 — 2026-10-06 ✅
+- [x] sql/03_registry_unique.sql: UNIQUE (company_type, year) on raw.raw_business_registry
+- [x] src/load.py: upsert_registrations() with ON CONFLICT DO UPDATE
+- [x] main.py: full pipeline (extract → transform → validate → load)
+- [x] Reordered imports: PROJECT_ROOT + sys.path.insert BEFORE local imports
+- [x] .vscode/settings.json: disable formatOnSave + organizeImports (keeps sys.path trick working)
+- [x] Idempotency proven: ran twice → 12 registry + 25 credit, unchanged
