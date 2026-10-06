@@ -1,7 +1,9 @@
+import logging
 from pathlib import Path
 import re
 import pandas as pd
 
+log = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
@@ -41,6 +43,13 @@ def standardize_province(value):
 
 
 def clean_registrations(path: Path) -> pd.DataFrame:
+
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Raw file not found: {path}. "
+            f"Run extract first: python src/extract.py"
+        )
+    
     df = pd.read_csv(path)
     df = standardize_columns(df)
     df["registration_count"] = pd.to_numeric(
@@ -50,6 +59,13 @@ def clean_registrations(path: Path) -> pd.DataFrame:
 
 
 def clean_credit(path: Path) -> pd.DataFrame:
+
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Raw file not found: {path}. "
+            f"Make sure credit_by_area_province_2024.csv is in data/raw/."
+        )
+    
     df = pd.read_csv(path)
     df = standardize_columns(df)
     df["province"] = df["province"].apply(standardize_province)
