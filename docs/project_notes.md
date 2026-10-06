@@ -139,3 +139,12 @@ main.py  – entry point
 - [x] Paths anchored to PROJECT_ROOT (Path(__file__).resolve().parents[1]) — runs from anywhere
 - [x] Test: injected 3 bad rows → 3 caught (1 null, 2 negative)
 - [x] Real data: 12 + 25 rows, 0 rejects (clean)
+### Day 9 — 2026-10-06 ✅
+- [x] sql/02_create_raw_credit.sql: raw.raw_credit_by_province
+  - UNIQUE (province, reporting_year) — enables UPSERT
+  - NUMERIC for money/counts (exact decimal, not FLOAT)
+- [x] src/load.py: UPSERT via INSERT ... ON CONFLICT ... DO UPDATE
+  - Credentials from .env via os.getenv (never hardcoded)
+  - Transaction via engine.begin() — all-or-nothing
+- [x] Proven idempotent: ran twice → still 25 rows
+- [x] Proven overwrite: tampered Kandal → upsert reverted it
