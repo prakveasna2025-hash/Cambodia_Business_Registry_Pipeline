@@ -1,3 +1,4 @@
+from logging_config import setup_logging
 from transform import clean_credit, RAW_DIR, PROJECT_ROOT
 from pathlib import Path
 import os
@@ -6,6 +7,10 @@ import logging
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 import pandas as pd
+from sqlalchemy.exc import OperationalError
+
+log = logging.getLogger(__name__)
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 REPORTING_YEAR = 2024
@@ -56,18 +61,6 @@ def upsert_registrations(engine, df) -> int:
     return len(records)
 
 
-def setup_logging() -> None:
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s | %(levelname)-7s | %(message)s",
-        handlers=[
-            logging.FileHandler(LOG_FILE, encoding="utf-8"),
-            logging.StreamHandler(),
-        ],
-    )
-
-
 def get_engine():
     load_dotenv(PROJECT_ROOT / ".env")
     user = os.getenv("POSTGRES_USER")
@@ -75,11 +68,44 @@ def get_engine():
     db = os.getenv("POSTGRES_DB")
     host = os.getenv("POSTGRES_HOST", "localhost")
     port = os.getenv("POSTGRES_PORT", "5433")
-    if not all([user, pw, db]):
-        raise RuntimeError("Missing POSTGRES_* env vars in .env")
+
+    missing = [k for k, v in {
+        "POSTGRES_USER": user,
+        "POSTGRES_PASSWORD": pw,
+        "POSTGRES_DB": db,
+    }.items() if not v]
+    if missing:
+        raise RuntimeError(
+            f"Missing env vars in .env: {', '.join(missing)}. "
+            f"Check {PROJECT_ROOT / '.env'}."
+        )
+
     url = f"postgresql+psycopg2://{user}:{pw}@{host}:{port}/{db}"
-    logging.info("DB target: %s@%s:%s/%s", user, host, port, db)
-    return create_engine(url)
+    log.info("DB target: %s@%s:%s/%s", user, host, port, db)
+
+    engine = create_engine(url)
+
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except OperationalError as e:
+        msg = str(e).lower()
+        if "password" in msg or "authentication" in msg:
+            raise RuntimeError(
+                f"DB auth failed for user '{user}'. "
+                f"Check POSTGRES_USER / POSTGRES_PASSWORD in .env."
+            ) from e
+        if "could not connect" in msg or "connection refused" in msg:
+            raise RuntimeError(
+                f"Cannot connect to Postgres at {host}:{port}. "
+                f"Is the DB running? Try: docker compose ps"
+            ) from e
+        raise RuntimeError(
+            f"DB connection failed: {e}. "
+            f"Target: {user}@{host}:{port}/{db}"
+        ) from e
+
+    return engine
 
 
 def to_records(df, year: int) -> list[dict]:
@@ -104,12 +130,12 @@ def upsert_credit(engine, df, year: int) -> int:
 
 def main() -> None:
     setup_logging()
-    logging.info("=== load run start ===")
+    log.info("=== load run start ===")
     engine = get_engine()
     credit = clean_credit(RAW_DIR / "credit_by_area_province_2024.csv")
     n = upsert_credit(engine, credit, REPORTING_YEAR)
-    logging.info("Upserted %d credit rows for year %d", n, REPORTING_YEAR)
-    logging.info("=== load run end ===")
+    log.info("Upserted %d credit rows for year %d", n, REPORTING_YEAR)
+    log.info("=== load run end ===")
 
 
 if __name__ == "__main__":

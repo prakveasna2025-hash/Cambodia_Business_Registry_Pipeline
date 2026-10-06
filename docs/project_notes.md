@@ -155,3 +155,14 @@ main.py  – entry point
 - [x] Reordered imports: PROJECT_ROOT + sys.path.insert BEFORE local imports
 - [x] .vscode/settings.json: disable formatOnSave + organizeImports (keeps sys.path trick working)
 - [x] Idempotency proven: ran twice → 12 registry + 25 credit, unchanged
+### Day 11 — 2026-10-06 ✅
+- [x] src/logging_config.py: single setup_logging(), format with module name
+- [x] Every module uses log = logging.getLogger(__name__)
+- [x] Replaced print() in validate.py with log.info()
+- [x] Removed duplicate setup_logging() from extract.py, load.py
+- [x] Error handling:
+  - extract.py: ConnectionError, Timeout, non-200 → actionable RuntimeError
+  - transform.py: missing raw file → FileNotFoundError with fix hint
+  - load.py: missing env vars, auth fail, connection refused → clear RuntimeError
+  - main.py: top-level try/except → logs error, sys.exit(1), no traceback
+- [x] Tested failure path: DB stopped → clean one-line error

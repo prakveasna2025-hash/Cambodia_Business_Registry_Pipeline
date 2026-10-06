@@ -1,9 +1,13 @@
-from transform import clean_registrations, clean_credit
 from pathlib import Path
 import sys
+import logging
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from transform import clean_registrations, clean_credit
+
+log = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
@@ -49,8 +53,8 @@ def annotate_reasons(df: pd.DataFrame, mask_required: pd.Series, mask_negative: 
 
 
 def validate(name: str, df: pd.DataFrame, required: list[str], non_negative: list[str]):
-    print(f"\n=== validate: {name} ===")
-    print(f"input rows: {len(df)}")
+    log.info("=== validate: %s ===", name)
+    log.info("input rows: %d", len(df))
 
     mask_required = check_required(df, required)
     mask_negative = check_non_negative(df, non_negative)
@@ -59,16 +63,17 @@ def validate(name: str, df: pd.DataFrame, required: list[str], non_negative: lis
     valid = df[~rejected_mask].copy()
     rejected = df[rejected_mask].copy()
 
-    print(f"valid rows:    {len(valid)}")
-    print(f"rejected rows: {len(rejected)}")
+    # ... after computing valid/rejected:
+    log.info("valid rows:    %d", len(valid))
+    log.info("rejected rows: %d", len(rejected))
 
     if len(rejected) > 0:
         rejected = annotate_reasons(rejected, mask_required, mask_negative)
         REJECTED_DIR.mkdir(parents=True, exist_ok=True)
         out = REJECTED_DIR / f"{name}_rejected.csv"
         rejected.to_csv(out, index=False, encoding="utf-8")
-        print(f"rejected written to: {out}")
-        print(rejected.to_string())
+        log.info("rejected written to: %s", out)
+        log.info("rejected records:\n%s", rejected.to_string())
 
     return valid, rejected
 

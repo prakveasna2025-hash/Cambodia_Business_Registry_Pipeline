@@ -11,30 +11,31 @@ OUT = RAW_DIR / "new_business_registrations_api.csv"
 LOG_FILE = LOG_DIR / "fetch.log"
 PAGE_SIZE = 100
 
-
-def setup_logging() -> None:
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s | %(levelname)-7s | %(message)s",
-        handlers=[
-            logging.FileHandler(LOG_FILE, encoding="utf-8"),
-            logging.StreamHandler(),
-        ],
-    )
-
+log = logging.getLogger(__name__)
 
 def fetch_all() -> list[dict]:
     all_items: list[dict] = []
     page = 1
 
     while True:
-        resp = requests.get(
-            BASE_URL,
-            params={"page": page, "page_size": PAGE_SIZE},
-            timeout=30,
-        )
-        resp.raise_for_status()
+        try:
+            resp = requests.get(BASE_URL, params={"page": page, "page_size": PAGE_SIZE}, timeout=30)
+        except requests.ConnectionError as e:
+            raise RuntimeError(
+                f"Cannot reach MEF API at {BASE_URL}. "
+                f"Check your internet connection. Original error: {e}"
+            ) from e
+        except requests.Timeout as e:
+            raise RuntimeError(
+                f"MEF API timed out after 30s at {BASE_URL}. "
+                f"Try again, or increase timeout. Original error: {e}"
+            ) from e
+
+        if resp.status_code != 200:
+            raise RuntimeError(
+                f"MEF API returned HTTP {resp.status_code} for {BASE_URL}. "
+                f"The dataset ID may have changed — check data.mef.gov.kh."
+            )
 
         size_bytes = len(resp.content)
         size_kb = size_bytes / 1024
@@ -45,7 +46,7 @@ def fetch_all() -> list[dict]:
         total_pages = payload.get("total_pages", 1)
         total_items = payload.get("total_items", len(items))
 
-        logging.info(
+        log.info(
             "page %d/%d | response: %d bytes (%.2f KB) | server Content-Length: %s | rows this page: %d",
             page, total_pages, size_bytes, size_kb, server_size, len(items),
         )
@@ -56,7 +57,7 @@ def fetch_all() -> list[dict]:
             break
         page += 1
 
-    logging.info("Total rows fetched: %d (API reported total_items=%d)", len(
+    log.info("Total rows fetched: %d (API reported total_items=%d)", len(
         all_items), total_items)
     return all_items
 
@@ -67,16 +68,15 @@ def save(items: list[dict], out: Path) -> None:
     df.to_csv(out, index=False, encoding="utf-8")
 
     file_bytes = out.stat().st_size
-    logging.info("Saved CSV: %s | %d rows | %d bytes (%.2f KB)",
-                 out, len(df), file_bytes, file_bytes / 1024)
+    log.info("Saved CSV: %s | %d rows | %d bytes (%.2f KB)",
+             out, len(df), file_bytes, file_bytes / 1024)
 
 
 def main() -> None:
-    setup_logging()
-    logging.info("=== extract run start ===")
+    log.info("=== extract run start ===")
     items = fetch_all()
     save(items, OUT)
-    logging.info("=== extract run end ===")
+    log.info("=== extract run end ===")
 
 
 if __name__ == "__main__":
