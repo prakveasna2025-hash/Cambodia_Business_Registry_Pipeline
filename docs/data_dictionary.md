@@ -77,3 +77,18 @@ Verified: 25 rows, 0 duplicate provinces.
 - Registrations data is national, aggregated by company type and year.
 - Credit data is provincial, single year.
 - Different grains — do not join directly.
+
+🧠 Why dbt? (The "T" in ELT)
+Your current pipeline loads raw data into raw.raw_business_registry and raw.raw_credit_by_province. But those tables are just copies of the source. Real analytics needs cleaned, joined, business-ready tables.
+
+dbt lets you write SQL SELECT statements (called models), and it handles:
+
+Materialization — turning a SELECT into a table or view
+
+Dependencies — model B runs after model A if B references A
+
+Testing — asserting data quality (e.g., "no nulls in province")
+
+Documentation — auto-generated docs from your SQL
+
+You write the logic; dbt handles the orchestration.
