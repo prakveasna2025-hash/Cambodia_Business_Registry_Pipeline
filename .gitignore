@@ -14,6 +14,14 @@ data/processed/*
 *.log
 logs/
 
+
 data/rejected/*
 !data/rejected/.gitkeep
 scripts/
+
+
+# Ignore dbt artifacts
+dbt_packages/
+dbt_project/target/
+**/target/
+**/dbt_packages/

@@ -186,3 +186,10 @@ main.py  – entry point
 - [x] Connection: localhost:5433, user cam_registry_dev, db cambodia_registry, schema dbt_dev
 - [x] dbt debug: "All checks passed!"
 - [x] No plaintext password in profile (unlike ~/.dbt/profiles.yml from init)
+### Day 13 — 2026-10-07 ✅
+- [x] Installed dbt-postgres (Core 1.12.5, adapter 1.11.0)
+- [x] dbt init created cambodia_dbt/ (models, macros, seeds, snapshots, tests)
+- [x] profiles.yml at project root — reads from .env via env_var()
+- [x] Connection: localhost:5433, user cam_registry_dev, db cambodia_registry, schema dbt_dev
+- [x] dbt debug: "All checks passed!"
+- [x] Added .gitattributes: enforce LF line endings
