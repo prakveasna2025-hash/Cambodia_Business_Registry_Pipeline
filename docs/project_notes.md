@@ -178,3 +178,11 @@ main.py  – entry point
 - [x] Ran: docker compose up -d --build → etl Exited (0)
 - [x] Data verified: 12 registry + 25 credit
 - [x] Logs on host at logs/pipeline.log
+
+### Day 13 — 2026-10-07 ✅
+- [x] Installed dbt-postgres (Core 1.12.5, adapter 1.11.0)
+- [x] dbt init created cambodia_dbt/ (models, macros, seeds, snapshots, tests, dbt_project.yml)
+- [x] profiles.yml at project root — reads from .env via env_var()
+- [x] Connection: localhost:5433, user cam_registry_dev, db cambodia_registry, schema dbt_dev
+- [x] dbt debug: "All checks passed!"
+- [x] No plaintext password in profile (unlike ~/.dbt/profiles.yml from init)
