@@ -17,5 +17,20 @@ services:
       timeout: 5s
       retries: 5
 
+  etl:
+    build: .
+    container_name: cambodia_etl
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+
 volumes:
   pg_data:

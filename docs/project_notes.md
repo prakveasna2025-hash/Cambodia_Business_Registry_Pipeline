@@ -166,3 +166,15 @@ main.py  – entry point
   - load.py: missing env vars, auth fail, connection refused → clear RuntimeError
   - main.py: top-level try/except → logs error, sys.exit(1), no traceback
 - [x] Tested failure path: DB stopped → clean one-line error
+
+### Day 12 — 2026-10-07 ✅
+- [x] Dockerfile: python:3.11-slim, PYTHONUNBUFFERED=1, COPY code after pip install
+- [x] .dockerignore: excludes venv, .git, data, logs, docs, .env
+- [x] docker-compose etl service:
+  - build: .
+  - depends_on postgres with service_healthy condition
+  - env_file .env + environment overrides (POSTGRES_HOST=postgres, PORT=5432)
+  - bind mounts ./data:/app/data and ./logs:/app/logs
+- [x] Ran: docker compose up -d --build → etl Exited (0)
+- [x] Data verified: 12 registry + 25 credit
+- [x] Logs on host at logs/pipeline.log
