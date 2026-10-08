@@ -25,3 +25,6 @@ dbt_packages/
 dbt_project/target/
 **/target/
 **/dbt_packages/
+
+# Complete Staging
+.user.yml

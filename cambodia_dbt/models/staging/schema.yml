@@ -1,0 +1,47 @@
+version: 2
+
+models:
+  - name: stg_business_registry
+    description: "Cleaned new business registrations by company type and year."
+    columns:
+      - name: registry_id
+        description: "Surrogate primary key."
+        tests:
+          - unique
+          - not_null
+      - name: company_type
+        description: "Company type."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Partnership Company', 'Sole Proprietorship', 'Foreign Trade Company', 'Capital Company']
+      - name: registration_year
+        description: "Reporting year."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [2022, 2023, 2024]
+
+  - name: stg_credit_by_province
+    description: "Cleaned provincial credit distribution."
+    columns:
+      - name: credit_id
+        description: "Surrogate primary key."
+        tests:
+          - unique
+          - not_null
+      - name: province
+        description: "Province name."
+        tests:
+          - not_null
+          - unique
+      - name: area
+        description: "Regional grouping."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Plains', 'Plateau', 'Tonle Sap', 'Coastal']
+      - name: credit_balance_usd_millions
+        description: "Credit balance in USD millions."
+        tests:
+          - not_null

@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    description: "Raw tables loaded by the Python ETL pipeline."
+    tables:
+      - name: raw_business_registry
+      - name: raw_credit_by_province

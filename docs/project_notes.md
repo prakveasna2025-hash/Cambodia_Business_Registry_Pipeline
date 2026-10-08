@@ -193,3 +193,13 @@ main.py  – entry point
 - [x] Connection: localhost:5433, user cam_registry_dev, db cambodia_registry, schema dbt_dev
 - [x] dbt debug: "All checks passed!"
 - [x] Added .gitattributes: enforce LF line endings
+
+### Day 14 — 2026-10-08 ✅
+- [x] Deleted dbt sample models (models/example/)
+- [x] sources.yml: declares raw.raw_business_registry, raw.raw_credit_by_province
+- [x] stg_business_registry.sql: casts year + registration_count to INT, renames year -> registration_year
+- [x] stg_credit_by_province.sql: renames credit_balance_usd_m -> credit_balance_usd_millions, credit_users_k -> credit_users_thousands
+- [x] schema.yml tests (13 total) — all pass
+- [x] dbt run: PASS=2; dbt test: PASS=13
+- [x] Fixed accepted_values syntax (values nested under arguments)
+- [x] dbt_project.yml: replaced example config with staging
