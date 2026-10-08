@@ -203,3 +203,13 @@ main.py  – entry point
 - [x] dbt run: PASS=2; dbt test: PASS=13
 - [x] Fixed accepted_values syntax (values nested under arguments)
 - [x] dbt_project.yml: replaced example config with staging
+
+### Day 15 — 2026-10-08 ✅
+- [x] 3 mart models (materialized as tables):
+  - mart_registrations_by_year — 3 rows (2022, 2023, 2024)
+  - mart_registrations_by_company_type — 4 rows
+  - mart_credit_by_area — 4 rows (Plains, Tonle Sap, Coastal, Plateau)
+- [x] dbt_project.yml: marts +materialized: table
+- [x] marts/schema.yml: 6 tests (unique + not_null on key of each mart)
+- [x] Bug fixed: mart_registrations_by_year's CTE missed company_type
+- [x] dbt run: PASS=5; dbt test: PASS=19

@@ -33,3 +33,5 @@ models:
   cambodia_dbt:
     staging:
       +materialized: view
+    marts:
+      +materialized: table
