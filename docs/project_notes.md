@@ -213,3 +213,12 @@ main.py  – entry point
 - [x] marts/schema.yml: 6 tests (unique + not_null on key of each mart)
 - [x] Bug fixed: mart_registrations_by_year's CTE missed company_type
 - [x] dbt run: PASS=5; dbt test: PASS=19
+
+### Day 16 — 2026-10-08 ✅
+- [x] packages.yml: dbt-labs/dbt_utils (1.4.1) for unique_combination_of_columns
+- [x] staging/schema.yml updates:
+  - accepted_values now uses `arguments:` wrapper (dbt 1.12 syntax)
+  - not_null on reporting_year
+  - dbt_utils.unique_combination_of_columns on (province, reporting_year)
+- [x] tests/assert_registration_count_non_negative.sql — custom non-negative test
+- [x] dbt build: PASS=26 WARN=0 ERROR=0 (5 models + 21 tests)
