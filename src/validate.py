@@ -5,14 +5,13 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from transform import clean_registrations, clean_credit
+from transform import clean_registrations, clean_credit, SEEDS_DIR
 
 log = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 REJECTED_DIR = PROJECT_ROOT / "data" / "rejected"
-
 REQUIRED_REGISTRATIONS = ["company_type", "year"]
 REQUIRED_CREDIT = ["area", "province",
                    "credit_balance_usd_m", "credit_users_k"]

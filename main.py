@@ -7,7 +7,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from logging_config import setup_logging
 from extract import fetch_all, save, OUT as RAW_OUT
-from transform import clean_registrations, clean_credit, RAW_DIR
+from transform import clean_registrations, clean_credit, RAW_DIR, SEEDS_DIR
 from validate import (
     validate,
     REQUIRED_REGISTRATIONS, REQUIRED_CREDIT,
@@ -33,7 +33,7 @@ def main() -> None:
         # 2. TRANSFORM
         log.info("[2/4] transform: cleaning datasets")
         reg = clean_registrations(RAW_DIR / "new_business_registrations_api.csv")
-        credit = clean_credit(RAW_DIR / "credit_by_area_province_2024.csv")
+        credit = clean_credit(SEEDS_DIR / "credit_by_area_province_2024.csv")
 
         # 3. VALIDATE
         log.info("[3/4] validate")

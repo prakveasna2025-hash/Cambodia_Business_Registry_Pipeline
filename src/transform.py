@@ -7,6 +7,7 @@ log = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
+SEEDS_DIR = PROJECT_ROOT / "data" / "seeds"
 PROVINCE_MAP = {
     "Steung Traeng": "Stung Treng",
     "Sihanoukville": "Preah Sihanouk",
