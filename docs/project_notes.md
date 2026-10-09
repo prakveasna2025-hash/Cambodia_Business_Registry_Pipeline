@@ -222,3 +222,13 @@ main.py  – entry point
   - dbt_utils.unique_combination_of_columns on (province, reporting_year)
 - [x] tests/assert_registration_count_non_negative.sql — custom non-negative test
 - [x] dbt build: PASS=26 WARN=0 ERROR=0 (5 models + 21 tests)
+### Day 17 — 2026-10-09 ✅
+- [x] 4 analyses in cambodia_dbt/analyses/:
+  - top_province_by_credit.sql — Phnom Penh ($22.9B)
+  - top5_bottom5_provinces.sql — top/bottom 5 by credit
+  - pct_of_national_total.sql — % share per province (25 rows)
+  - phnom_penh_vs_rest.sql — bucketed comparison with window function
+- [x] Key insights:
+  - Phnom Penh = 44.78% of national credit (1 province)
+  - Phnom Penh = 13.8% of credit users (694k of 5.04M)
+  - 24 provinces have 86% of users but only 55% of credit
