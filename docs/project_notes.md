@@ -221,7 +221,7 @@ main.py  – entry point
   - not_null on reporting_year
   - dbt_utils.unique_combination_of_columns on (province, reporting_year)
 - [x] tests/assert_registration_count_non_negative.sql — custom non-negative test
-- [x] dbt build: PASS=26 WARN=0 ERROR=0 (5 models + 21 tests)
+- [x] dbt build: PASS=26 WARN=0 ERROR=0 (5 models + 21 tests)  
 ### Day 17 — 2026-10-09 ✅
 - [x] 4 analyses in cambodia_dbt/analyses/:
   - top_province_by_credit.sql — Phnom Penh ($22.9B)
