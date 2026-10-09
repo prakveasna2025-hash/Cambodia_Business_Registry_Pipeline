@@ -240,3 +240,19 @@ main.py  – entry point
 - [x] Fixed broken image tag (![](docs/architecture.md) -> inline Mermaid)
 - [x] Mermaid architecture diagram renders on GitHub
 - [x] 5 screenshots embedded
+### Day 20 — 2026-10-09 ✅
+Clean-room test: cloned repo to C:\clean_test, followed README only.
+
+Gaps found and fixed:
+1. python not on PATH → README prerequisite note
+2. (pip cancelled mid-install — user error, skipped)
+3. no .env.example → committed .env.example
+4. .env missing → silent blank defaults in compose → README warning + order emphasis
+5. credit CSV not reproducible → moved to data/seeds/ (committed)
+6. dbt can't read .env → README env-var loading one-liner
+7. `code .env` fails on Windows → use notepad
+8. order: .env before docker compose up → README warning
+9. @ in password breaks URL → README password rules
+10. sql/03 not idempotent → DROP CONSTRAINT IF EXISTS first
+
+Commits: 4a31658 (seeds), f9f9bae (README + .env.example + migration)
