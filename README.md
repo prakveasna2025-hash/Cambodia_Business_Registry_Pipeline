@@ -1,62 +1,217 @@
 # Cambodia Business Registry Pipeline
 
-## Goal
-A data pipeline that ingests, cleans, and stores Cambodian business registry data for analysis and querying. Built as a learning + portfolio project.
+> End-to-end data pipeline for Cambodian public data — from API/CSV ingestion to analytics-ready marts.
 
-## Tech Stack
-- Python 3.x
-- pandas
-- requests
-- pytest
-- SQL (planned)
-- Docker (planned)
+## Overview
 
-## Project Structure
-src/ – pipeline code
-test/ – unit tests
-data/ – raw and processed data (gitignored, .gitkeep only)
-sql/ – SQL schemas and queries
-logs/ – runtime logs (gitignored)
-main.py – entry point
+A production-style ETL + analytics project that ingests Cambodian business registration and provincial credit data from the Ministry of Economy and Finance (MEF) open data portal, cleans and validates it, loads it into Postgres, and models it with dbt into business-ready tables.
+
+Built as a portfolio project demonstrating the full data engineering lifecycle: extraction → transformation → validation → loading → modeling → testing → analysis.
 
 ## Architecture
 
-![Architecture](docs/architecture.md)
+```mermaid
+flowchart TD
+    A[MEF Open Data Portal<br/>data.mef.gov.kh] -->|API + CSV| B(extract.py)
+    B -->|raw CSVs| C{data/raw/}
+    C --> D(transform.py)
+    D --> E(validate.py)
+    E -->|rejected rows| F[data/rejected/]
+    E -->|valid rows| G(load.py)
+    G -->|UPSERT| H[(Postgres<br/>raw schema)]
+    H --> I[dbt staging<br/>views]
+    I --> J[dbt marts<br/>tables]
+    J --> K[analyses/<br/>ad-hoc SQL]
 
-(or just the mermaid block inline — see below)
+    subgraph Docker Compose
+        H
+        L[etl container]
+    end
+    L -.runs.-> B
+```
+
+## Data Source
+
+- **Portal:** [data.mef.gov.kh](https://data.mef.gov.kh) — Cambodia Ministry of Economy and Finance open data
+- **Dataset 1 — New Business Registrations (2022–2024):** fetched via public JSON API (`pd_688aee7f79fe4d000707d9b0`)
+- **Dataset 2 — Credit Distribution by Area and Province (2024):** downloaded as CSV
+
+## Tech Stack
+
+| Layer | Tools |
+|---|---|
+| Language | Python 3.11 |
+| Data | pandas, requests |
+| Database | PostgreSQL 16 (Docker) |
+| Transformation | dbt-core 1.12 + dbt-postgres + dbt_utils |
+| Config | python-dotenv |
+| Containerization | Docker, Docker Compose |
+| Logging | Python `logging` (file + console) |
+
+## Project Structure
+
+```
+src/                    Python ETL code
+  extract.py            fetch from MEF API
+  transform.py          clean + rename
+  validate.py           quality gates, reject reporting
+  load.py               UPSERT into Postgres
+  logging_config.py     shared logging setup
+main.py                 pipeline entry point
+sql/                    Postgres migrations
+cambodia_dbt/           dbt project
+  models/staging/       staging views
+  models/marts/         analytics tables
+  analyses/             ad-hoc SQL
+  tests/                custom tests
+docs/                   architecture, data dictionary, notes, screenshots
+data/                   raw + rejected (gitignored)
+logs/                   runtime logs (gitignored)
+```
+
+## Setup
+
+**Prerequisites:** Python 3.11+, Docker Desktop.
+
+```powershell
+git clone https://github.com/prakveasna2025-hash/Cambodia_Business_Registry_Pipeline.git
+cd Cambodia_Business_Registry_Pipeline
+
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+
+pip install dbt-postgres
+```
+
+Create a `.env` file in the project root:
+
+```
+POSTGRES_USER=cam_registry_dev
+POSTGRES_PASSWORD=your_password
+POSTGRES_DB=cambodia_registry
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5433
+```
+
+Start the database:
+
+```powershell
+docker compose up -d
+```
+
+Apply the schema migrations:
+
+```powershell
+Get-Content sql\01_create_raw_schema.sql | docker exec -i cambodia_registry_pg psql -U cam_registry_dev -d cambodia_registry
+Get-Content sql\02_create_raw_credit.sql | docker exec -i cambodia_registry_pg psql -U cam_registry_dev -d cambodia_registry
+Get-Content sql\03_registry_unique.sql | docker exec -i cambodia_registry_pg psql -U cam_registry_dev -d cambodia_registry
+```
+
+## How to Run
+
+### Option A — Full pipeline in Docker
+
+```powershell
+docker compose up -d --build
+docker compose logs etl
+```
+
+### Option B — Run stages locally
+
+```powershell
+python main.py                          # extract → transform → validate → load
+
+cd cambodia_dbt
+dbt deps --profiles-dir ..
+dbt build --profiles-dir ..             # run models + tests
+```
+
+### Query the results
+
+```powershell
+docker exec -it cambodia_registry_pg psql -U cam_registry_dev -d cambodia_registry
+```
+
+```sql
+SELECT * FROM dbt_dev.mart_registrations_by_year;
+SELECT * FROM dbt_dev.mart_credit_by_area;
+```
+
+## Data Model
+
+| Layer | Relation | Type | Rows |
+|---|---|---|---|
+| raw | `raw.raw_business_registry` | table | 12 |
+| raw | `raw.raw_credit_by_province` | table | 25 |
+| staging | `dbt_dev.stg_business_registry` | view | 12 |
+| staging | `dbt_dev.stg_credit_by_province` | view | 25 |
+| mart | `dbt_dev.mart_registrations_by_year` | table | 3 |
+| mart | `dbt_dev.mart_registrations_by_company_type` | table | 4 |
+| mart | `dbt_dev.mart_credit_by_area` | table | 4 |
+
+Full column-level definitions: [`docs/data_dictionary.md`](docs/data_dictionary.md).
+
+## Quality Checks
+
+- **Python validation** — required-field and non-negative checks; rejected rows written to `data/rejected/` with a `reject_reason` column
+- **dbt tests (26 passing)**:
+  - `not_null` on key columns
+  - `unique` + `not_null` on surrogate keys
+  - `accepted_values` on categorical columns (company type, area, year)
+  - `unique_combination_of_columns` on `(province, reporting_year)` (via `dbt_utils`)
+  - Custom non-negative test (`tests/assert_registration_count_non_negative.sql`)
+
+## Results — Key Insights
+
+From `cambodia_dbt/analyses/`:
+
+- **Phnom Penh holds 44.78% of national credit** — 1 of 25 provinces
+- **Phnom Penh has only 13.8% of credit users** (694k of 5.04M) — the money is there, the users aren't
+- **The other 24 provinces hold 86% of credit users but only 55% of credit** — underbanked per capita
+- **Top 5 provinces carry ~63% of credit** — a strong Pareto distribution
+- **Kep is the smallest at 0.20%** of national credit
+- **Business registrations peaked in 2023** (11,506) then fell ~17% in 2024 (9,530)
+- **Sole Proprietorships dominate** — 56% of all new registrations (2022–2024)
 
 ## Screenshots
 
-### Docker stack
-![Docker containers running](docs/screenshots/01_docker_ps.png)
+### Docker stack running
+![Docker containers](docs/screenshots/01_docker_ps.png)
 
-### Pipeline log
-![Pipeline run](docs/screenshots/02_pipeline_log.png)
+### Pipeline execution log
+![Pipeline log](docs/screenshots/02_pipeline_log.png)
 
-### dbt build (26 tests passing)
+### dbt build — 26 tests passing
 ![dbt build](docs/screenshots/03_dbt_build.png)
 
 ### Sample mart query
 ![Mart query](docs/screenshots/04_mart_query.png)
 
-### dbt lineage
+### dbt lineage graph
 ![dbt lineage](docs/screenshots/05_lineage.png)
 
-## Key insights
+## Limitations
 
-From `cambodia_dbt/analyses/`:
+- **Small dataset** — 37 raw rows; architecture is designed to scale but is not stress-tested at volume.
+- **Single year for credit** — credit data covers 2024 only; no year-over-year provincial trend.
+- **No province-level business registrations** — registration data is national, so credit and registrations cannot be joined at province grain.
+- **Two Partnership Company nulls** — real missing data from the source; preserved as `NULL` (documented, not imputed).
+- **No CI yet** — tests run locally, not on every push.
 
-- **Phnom Penh holds 44.78% of national credit** (1 of 25 provinces)
-- **Phnom Penh has only 13.8% of credit users** — the money is there, the users aren't
-- **24 other provinces hold 86% of credit users but only 55% of credit**
-- **Top 5 provinces carry ~63% of credit** — a strong Pareto distribution
+## Future Work
+
+- GitHub Actions CI running `dbt build` + pytest on push
+- Additional data sources (population, GDP) for per-capita metrics
+- Province-level business registration dataset to enable joins with credit
+- Publish dbt docs to GitHub Pages
+- Migrate raw `registration_count` / `year` columns from `TEXT` to `INTEGER`
+
 ## Status
 
-✅ **Pipeline complete** — end-to-end ETL + analytics
+✅ Pipeline complete — end-to-end ETL + analytics
 
-- 4 datasets ingested and cleaned
+- 37 raw rows ingested and cleaned
 - 26 dbt tests passing
-- 3 analytics marts
-- 4 business analyses
-
-🚧 **Future work**: CI/CD, dbt Cloud, additional data sources
+- 3 analytics marts, 4 business analyses
+- Fully containerized (Postgres + ETL)
