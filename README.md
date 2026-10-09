@@ -34,7 +34,7 @@ flowchart TD
 
 - **Portal:** [data.mef.gov.kh](https://data.mef.gov.kh) — Cambodia Ministry of Economy and Finance open data
 - **Dataset 1 — New Business Registrations (2022–2024):** fetched via public JSON API (`pd_688aee7f79fe4d000707d9b0`)
-- **Dataset 2 — Credit Distribution by Area and Province (2024):** downloaded as CSV
+- **Dataset 2 — Credit Distribution by Area and Province (2024):** committed as a seed file under `data/seeds/` (source: MEF portal)
 
 ## Tech Stack
 
@@ -58,20 +58,27 @@ src/                    Python ETL code
   load.py               UPSERT into Postgres
   logging_config.py     shared logging setup
 main.py                 pipeline entry point
-sql/                    Postgres migrations
+sql/                    Postgres migrations (idempotent)
 cambodia_dbt/           dbt project
   models/staging/       staging views
   models/marts/         analytics tables
   analyses/             ad-hoc SQL
   tests/                custom tests
 docs/                   architecture, data dictionary, notes, screenshots
-data/                   raw + rejected (gitignored)
+data/
+  seeds/                small reference CSVs (committed)
+  raw/                  API/CSV output (gitignored)
+  rejected/             failed validation rows (gitignored)
 logs/                   runtime logs (gitignored)
 ```
 
 ## Setup
 
-**Prerequisites:** Python 3.11+, Docker Desktop.
+**Prerequisites:**
+- **Python 3.11+** on `PATH` — verify with `python --version`. If not found, either reinstall Python with *"Add Python to PATH"* checked, or use the full path to `python.exe` when running commands.
+- **Docker Desktop** running.
+
+### 1. Clone and install
 
 ```powershell
 git clone https://github.com/prakveasna2025-hash/Cambodia_Business_Registry_Pipeline.git
@@ -80,52 +87,82 @@ cd Cambodia_Business_Registry_Pipeline
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
-
 pip install dbt-postgres
 ```
 
-Create a `.env` file in the project root:
+### 2. Configure environment
 
-```
-POSTGRES_USER=cam_registry_dev
-POSTGRES_PASSWORD=your_password
-POSTGRES_DB=cambodia_registry
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5433
+```powershell
+Copy-Item .env.example .env
+notepad .env
 ```
 
-Start the database:
+Set a password you'll remember, then save and close.
+
+> **Windows note:** `code .env` may fail because VS Code's CLI strips the leading dot. Use `notepad` instead.
+>
+> **Password rules:** use only letters, numbers, and underscores. Characters like `@`, `:`, `/`, `?` break the connection URL.
+>
+> **Order matters:** `.env` must exist **before** `docker compose up`. Otherwise Postgres initializes with a blank user/password, and you'll have to wipe the volume: `docker compose down -v` then `docker compose up -d`.
+
+### 3. Start the database
 
 ```powershell
 docker compose up -d
+docker compose ps
 ```
 
-Apply the schema migrations:
+Wait until `cambodia_registry_pg` shows `healthy` (about 5 seconds).
+
+### 4. Apply schema migrations
+
+Each migration is idempotent — safe to re-run.
 
 ```powershell
 Get-Content sql\01_create_raw_schema.sql | docker exec -i cambodia_registry_pg psql -U cam_registry_dev -d cambodia_registry
-Get-Content sql\02_create_raw_credit.sql | docker exec -i cambodia_registry_pg psql -U cam_registry_dev -d cambodia_registry
-Get-Content sql\03_registry_unique.sql | docker exec -i cambodia_registry_pg psql -U cam_registry_dev -d cambodia_registry
+Get-Content sql\02_create_raw_credit.sql  | docker exec -i cambodia_registry_pg psql -U cam_registry_dev -d cambodia_registry
+Get-Content sql\03_registry_unique.sql    | docker exec -i cambodia_registry_pg psql -U cam_registry_dev -d cambodia_registry
 ```
 
 ## How to Run
 
 ### Option A — Full pipeline in Docker
 
+Runs extract → transform → validate → load inside a container. Postgres is already running from Setup.
+
 ```powershell
 docker compose up -d --build
 docker compose logs etl
 ```
 
+Expected: ETL container exits with code 0. Row counts in the DB:
+```powershell
+docker exec -it cambodia_registry_pg psql -U cam_registry_dev -d cambodia_registry -c "SELECT (SELECT COUNT(*) FROM raw.raw_business_registry) AS registry, (SELECT COUNT(*) FROM raw.raw_credit_by_province) AS credit;"
+```
+
 ### Option B — Run stages locally
 
 ```powershell
-python main.py                          # extract → transform → validate → load
+# 1. Python ETL
+python main.py
+```
 
+Then load `.env` values into the current PowerShell session — dbt reads shell env vars, not the `.env` file:
+
+```powershell
+Get-Content .env | ForEach-Object { if ($_ -match '^\s*([^#][^=]+?)\s*=\s*(.*?)\s*$') { Set-Item -Path "Env:$($matches[1])" -Value $matches[2] } }
+```
+
+Then run dbt:
+
+```powershell
 cd cambodia_dbt
 dbt deps --profiles-dir ..
-dbt build --profiles-dir ..             # run models + tests
+dbt build --profiles-dir ..
+cd ..
 ```
+
+Expected: `PASS=26 WARN=0 ERROR=0`.
 
 ### Query the results
 
@@ -159,7 +196,7 @@ Full column-level definitions: [`docs/data_dictionary.md`](docs/data_dictionary.
   - `not_null` on key columns
   - `unique` + `not_null` on surrogate keys
   - `accepted_values` on categorical columns (company type, area, year)
-  - `unique_combination_of_columns` on `(province, reporting_year)` (via `dbt_utils`)
+  - `unique_combination_of_columns` on `(province, reporting_year)` via `dbt_utils`
   - Custom non-negative test (`tests/assert_registration_count_non_negative.sql`)
 
 ## Results — Key Insights
