@@ -221,7 +221,7 @@ main.py  – entry point
   - not_null on reporting_year
   - dbt_utils.unique_combination_of_columns on (province, reporting_year)
 - [x] tests/assert_registration_count_non_negative.sql — custom non-negative test
-- [x] dbt build: PASS=26 WARN=0 ERROR=0 (5 models + 21 tests)  
+- [x] dbt build: PASS=26 WARN=0 ERROR=0 (5 models + 21 tests)
 ### Day 17 — 2026-10-09 ✅
 - [x] 4 analyses in cambodia_dbt/analyses/:
   - top_province_by_credit.sql — Phnom Penh ($22.9B)
@@ -232,3 +232,11 @@ main.py  – entry point
   - Phnom Penh = 44.78% of national credit (1 province)
   - Phnom Penh = 13.8% of credit users (694k of 5.04M)
   - 24 provinces have 86% of users but only 55% of credit
+### Day 19 — 2026-10-09 ✅
+- [x] Complete portfolio README (190 lines)
+- [x] Sections: Overview, Architecture, Data Source, Tech Stack,
+      Project Structure, Setup, How to Run, Data Model, Quality Checks,
+      Results, Screenshots, Limitations, Future Work, Status
+- [x] Fixed broken image tag (![](docs/architecture.md) -> inline Mermaid)
+- [x] Mermaid architecture diagram renders on GitHub
+- [x] 5 screenshots embedded
