@@ -241,7 +241,10 @@ main.py  – entry point
 - [x] Mermaid architecture diagram renders on GitHub
 - [x] 5 screenshots embedded
 ### Day 20 — 2026-10-09 ✅
-Clean-room test: cloned repo to C:\clean_test, followed README only.
+- [x] Clean-room test on fresh clone (C:\clean_test)
+- [x] 10 gaps found and fixed
+- [x] Full report: docs/clean_room_test.md
+- [x] Commits: 4a31658 (seeds), f9f9bae (README + .env.example + idempotent migration)
 
 Gaps found and fixed:
 1. python not on PATH → README prerequisite note

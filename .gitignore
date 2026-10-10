@@ -1,30 +1,42 @@
 # Python virtual environment
 venv/
+.venv/
 __pycache__/
 *.pyc
+*.pyo
 
 # Data files (keep schema/code, ignore bulk data)
 data/raw/*
 data/processed/*
+data/rejected/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+!data/rejected/.gitkeep
 
 # Environment variables / Credentials
 .env
+.env.*
+!.env.example
 *.log
 logs/
 
-
-data/rejected/*
-!data/rejected/.gitkeep
+# Dev scratch
 scripts/
+.user.yml
 
-
-# Ignore dbt artifacts
-dbt_packages/
-dbt_project/target/
+# dbt artifacts
 **/target/
 **/dbt_packages/
 
-# Complete Staging
-.user.yml
+# Caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
